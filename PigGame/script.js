@@ -13,6 +13,10 @@ const player0 = document.querySelector('.player--0');
 const player1 = document.querySelector('.player--1');
 const player0Name = document.getElementById('name--0');
 const player1Name = document.getElementById('name--1');
+const dice = document.querySelector('.dice');
+const rollButton = document.querySelector('.btn--roll');
+const holdButton = document.querySelector('.btn--hold');
+const newButton = document.querySelector('.btn--new');
 //resets all the elements
 resetGame();
 
@@ -41,7 +45,9 @@ function resetCurrents() {
 
 //creates a random number between 1-6
 function rollDice() {
-  return Math.trunc(Math.random() * 6) + 1;
+  let theNumber = Math.trunc(Math.random() * 6) + 1;
+
+  return theNumber;
 }
 
 //adds current score value to the score element
@@ -54,7 +60,6 @@ function secureScore(scoreCr, scoreEl, playerName) {
   resetCurrents();
   if (scoreEl.value >= 100) {
     playerName.textContent = `${playerName.textContent} WINS!`;
-
     setTimeout(() => {
       resetGame();
     }, 3000);
@@ -63,30 +68,72 @@ function secureScore(scoreCr, scoreEl, playerName) {
 
 //it swaps the section's `player--active` class if someone gets 1 in a dice or if someone uses hold button
 function holdAction() {
+  //buttons get re-disabled
+  changeBackground(false, 'current');
+  changeButtonsStatues(false);
   if (player0.classList.contains('player--active')) {
+    secureScore(score0Cr, score0El, player0Name);
     player0.classList.remove('player--active');
     player1.classList.add('player--active');
-    secureScore(score0Cr, score0El, player0Name);
   } else {
+    secureScore(score1Cr, score1El, player1Name);
     player0.classList.add('player--active');
     player1.classList.remove('player--active');
-    secureScore(score1Cr, score1El, player1Name);
   }
+  //when sides change dice gets hidden
+  if (!dice.classList.contains('hidden')) dice.classList.add('hidden');
 }
 
 //keeps current score updated
 function addScore(scoreCr) {
-  if (!(rollDice() === 1)) {
-    scoreCr.value += rollDice();
+  let theNumber = rollDice();
+  if (!(theNumber === 1)) {
+    scoreCr.value += showDice(theNumber);
     scoreCr.textContent = scoreCr.value;
-  } else {
-    resetCurrents();
-    holdAction();
+  }
+  //when dice rolls 1 buttons get disabled for 2 seconds
+  else {
+    showDice(1);
+    changeBackground(true, 'current');
+    changeButtonsStatues(true);
+    setTimeout(() => {
+      holdAction(), resetCurrents();
+    }, 2000);
   }
 }
 
+function changeBackground(change, background) {
+  let player;
+  player0.classList.contains('player--active')
+    ? (player = player0)
+    : (player = player1);
+
+  if (change) {
+    player.classList.add(background);
+  } else {
+    player.classList.remove(background);
+  }
+}
+//changes the buttons statues from true to false or reverse
+function changeButtonsStatues(disable) {
+  if (disable) {
+    rollButton.disabled = true;
+    holdButton.disabled = true;
+  } else {
+    rollButton.disabled = false;
+    holdButton.disabled = false;
+  }
+}
+
+//displayes the dice according to the value of dice
+function showDice(value) {
+  dice.src = `dice-${value}.png`;
+  if (dice.classList.contains('hidden')) dice.classList.remove('hidden');
+  return value;
+}
+
 //event listener for roll button
-document.querySelector('.btn--roll').addEventListener(`click`, function () {
+rollButton.addEventListener(`click`, function () {
   if (player0.classList.contains('player--active')) {
     addScore(score0Cr);
   } else {
@@ -95,11 +142,11 @@ document.querySelector('.btn--roll').addEventListener(`click`, function () {
 });
 
 //event listener for hold button
-document.querySelector('.btn--hold').addEventListener(`click`, function () {
+holdButton.addEventListener(`click`, function () {
   holdAction();
 });
 
 //event listener for reset button
-document.querySelector('.btn--new').addEventListener(`click`, function () {
+newButton.addEventListener(`click`, function () {
   resetGame();
 });
