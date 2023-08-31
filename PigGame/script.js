@@ -10,10 +10,10 @@ const newButton = document.querySelector('.btn--new');
 let score = [0, 0];
 let activePlayer = 0;
 const maxScore = 100;
+
 //resets all the elements
 resetGame();
 
-//resets the game
 function resetGame() {
   diceEl.classList.add('hidden');
 
