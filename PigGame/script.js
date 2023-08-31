@@ -105,28 +105,6 @@ function secureScore(scoreCr, scoreEl, playerName) {
   } else return 1;
 }
 
-//it swaps the section's `player--active` class if someone gets 1 in a dice or if someone uses hold button
-function holdAction() {
-  //buttons get re-disabled
-  changeBackground(false, 'current');
-  changeButtonsStatues(false);
-
-  //adds the current score to the "score"
-  //if the activePlayer does not win, returns 1 and changes the active player
-  if (
-    secureScore(
-      document.getElementById(`current--${activePlayer}`),
-      document.getElementById(`score--${activePlayer}`),
-      document.getElementById(`name--${activePlayer}`)
-    )
-  ) {
-    changeActivePlayer();
-  }
-
-  //when sides change dice gets hidden
-  if (!dice.classList.contains('hidden')) dice.classList.add('hidden');
-}
-
 function changeActivePlayer() {
   const player = document.querySelector(`.player--${activePlayer}`);
   let player2;
@@ -195,8 +173,26 @@ rollButton.addEventListener(`click`, function () {
 });
 
 //event listener for hold button
+//it swaps the section's `player--active` class if someone gets 1 in a dice or if someone uses hold button
 holdButton.addEventListener(`click`, function () {
-  holdAction();
+   //buttons get re-disabled
+  changeBackground(false, 'current');
+  changeButtonsStatues(false);
+
+  //adds the current score to the "score"
+  //if the activePlayer does not win, returns 1 and changes the active player
+  if (
+    secureScore(
+      document.getElementById(`current--${activePlayer}`),
+      document.getElementById(`score--${activePlayer}`),
+      document.getElementById(`name--${activePlayer}`)
+    )
+  ) {
+    changeActivePlayer();
+  }
+
+  //when sides change dice gets hidden
+  if (!dice.classList.contains('hidden')) dice.classList.add('hidden');
 });
 
 //event listener for reset button
