@@ -128,12 +128,16 @@ function addScore(scoreCr) {
     scoreCr.textContent = scoreCr.value;
   }
   //when dice rolls 1 buttons get disabled for 2 seconds
+  //background changes for 2 seconds
   else {
     changeButtonsStatues(true);
     showDice(1);
     changeBackground(true, 'current');
     setTimeout(() => {
-      resetCurrent(), holdAction();
+      resetCurrent(),
+        changeBackground(false, 'current'),
+        changeActivePlayer(),
+        changeButtonsStatues(false);
     }, 2000);
   }
 }
@@ -175,7 +179,7 @@ rollButton.addEventListener(`click`, function () {
 //event listener for hold button
 //it swaps the section's `player--active` class if someone gets 1 in a dice or if someone uses hold button
 holdButton.addEventListener(`click`, function () {
-   //buttons get re-disabled
+  //buttons get re-disabled
   changeBackground(false, 'current');
   changeButtonsStatues(false);
 
