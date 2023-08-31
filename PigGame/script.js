@@ -1,46 +1,70 @@
 'use strict';
 
-//+add dices
-//+add a feature to disable buttons when someone wins
-
 //getting elements
-const score0El = document.querySelector('#score--0');
-const score1El = document.getElementById('score--1'); //works just like quearySelector but faster (for id's)
 const diceEl = document.querySelector('.dice');
-const score0Cr = document.getElementById('current--0');
-const score1Cr = document.getElementById('current--1');
-const player0 = document.querySelector('.player--0');
-const player1 = document.querySelector('.player--1');
-const player0Name = document.getElementById('name--0');
-const player1Name = document.getElementById('name--1');
 const dice = document.querySelector('.dice');
 const rollButton = document.querySelector('.btn--roll');
 const holdButton = document.querySelector('.btn--hold');
 const newButton = document.querySelector('.btn--new');
+
+let score = [0, 0];
+let activePlayer = 0;
+const maxScore = 100;
 //resets all the elements
 resetGame();
 
 //resets the game
 function resetGame() {
   diceEl.classList.add('hidden');
-  resetCurrents();
-  score0El.value = 0;
-  score1El.value = 0;
-  score0El.textContent = 0;
-  score1El.textContent = 0;
+
+  //setting the value and the text content of current score to zero
+  resetCurrent();
+
+  //getting elements
+  const player0 = document.getElementById(`score--0`);
+  const player1 = document.getElementById(`score--1`);
+  const player0Name = document.getElementById('name--0');
+  const player1Name = document.getElementById('name--1');
+  const player1Cr = document.getElementById(`current--1`);
+
+  //setting values and text content of scores to zero
+  player1Cr.value = 0;
+  player0.value = 0;
+  player1.value = 0;
+  player0.textContent = 0;
+  player1.textContent = 0;
+
   player0Name.textContent = 'PLAYER 1';
   player1Name.textContent = 'PLAYER 2';
-  //if player 2 current swap
-  if (player1.classList.contains('player--active')) {
-    holdAction();
+
+  //removes the winner's background
+  if (
+    document
+      .querySelector(`.player--${activePlayer}`)
+      .classList.contains(`player--winner`)
+  ) {
+    document
+      .querySelector(`.player--${activePlayer}`)
+      .classList.remove(`player--winner`);
   }
+
+  if (activePlayer) {
+    //if player 2 current swap
+    changeActivePlayer();
+  }
+
+  //resets the score
+  score = [0, 0];
+
+  //reactivates the buttons
+  changeButtonsStatues(false);
 }
 //resets only the current score elements
-function resetCurrents() {
-  score0Cr.value = 0;
-  score1Cr.value = 0;
-  score0Cr.textContent = 0;
-  score1Cr.textContent = 0;
+function resetCurrent() {
+  const scoreCr = document.getElementById(`current--${activePlayer}`);
+
+  scoreCr.value = 0;
+  scoreCr.textContent = 0;
 }
 
 //creates a random number between 1-6
@@ -54,16 +78,31 @@ function rollDice() {
 //and checks if someone won
 //if someone wins changes its name to `player x wins!` and resets the game in 3 seconds
 function secureScore(scoreCr, scoreEl, playerName) {
-  scoreEl.value += scoreCr.value;
-  scoreEl.textContent = scoreEl.value;
+  console.log(activePlayer);
+  score[activePlayer] += scoreCr.value;
+  console.log(score[activePlayer]);
+  scoreEl.textContent = score[activePlayer];
 
-  resetCurrents();
-  if (scoreEl.value >= 100) {
+  resetCurrent();
+  console.log(score[activePlayer]);
+  if (score[activePlayer] >= maxScore) {
     playerName.textContent = `${playerName.textContent} WINS!`;
+
+    //disables the buttons
+    changeButtonsStatues(true);
+
+    //changes the background of the winning player
+    document
+      .querySelector(`.player--${activePlayer}`)
+      .classList.add(`player--winner`);
+
+    //resets the game with a 3 sec delay
     setTimeout(() => {
       resetGame();
     }, 3000);
-  }
+
+    return 0;
+  } else return 1;
 }
 
 //it swaps the section's `player--active` class if someone gets 1 in a dice or if someone uses hold button
@@ -71,17 +110,36 @@ function holdAction() {
   //buttons get re-disabled
   changeBackground(false, 'current');
   changeButtonsStatues(false);
-  if (player0.classList.contains('player--active')) {
-    secureScore(score0Cr, score0El, player0Name);
-    player0.classList.remove('player--active');
-    player1.classList.add('player--active');
-  } else {
-    secureScore(score1Cr, score1El, player1Name);
-    player0.classList.add('player--active');
-    player1.classList.remove('player--active');
+
+  //adds the current score to the "score"
+  //if the activePlayer does not win, returns 1 and changes the active player
+  if (
+    secureScore(
+      document.getElementById(`current--${activePlayer}`),
+      document.getElementById(`score--${activePlayer}`),
+      document.getElementById(`name--${activePlayer}`)
+    )
+  ) {
+    changeActivePlayer();
   }
+
   //when sides change dice gets hidden
   if (!dice.classList.contains('hidden')) dice.classList.add('hidden');
+}
+
+function changeActivePlayer() {
+  const player = document.querySelector(`.player--${activePlayer}`);
+  let player2;
+
+  //swaps the "playerActive" class between the players
+  activePlayer
+    ? (player2 = document.querySelector(`.player--0`))
+    : (player2 = document.querySelector(`.player--1`));
+  player.classList.remove('player--active');
+  player2.classList.add('player--active');
+
+  // if activePlayer 1 set to 0, if activePlayer 0 set to 1
+  activePlayer ? (activePlayer = 0) : (activePlayer = 1);
 }
 
 //keeps current score updated
@@ -93,20 +151,18 @@ function addScore(scoreCr) {
   }
   //when dice rolls 1 buttons get disabled for 2 seconds
   else {
+    changeButtonsStatues(true);
     showDice(1);
     changeBackground(true, 'current');
-    changeButtonsStatues(true);
     setTimeout(() => {
-      holdAction(), resetCurrents();
+      resetCurrent(), holdAction();
     }, 2000);
   }
 }
 
+//add or removes the given background
 function changeBackground(change, background) {
-  let player;
-  player0.classList.contains('player--active')
-    ? (player = player0)
-    : (player = player1);
+  let player = document.querySelector(`.player--${activePlayer}`);
 
   if (change) {
     player.classList.add(background);
@@ -134,11 +190,8 @@ function showDice(value) {
 
 //event listener for roll button
 rollButton.addEventListener(`click`, function () {
-  if (player0.classList.contains('player--active')) {
-    addScore(score0Cr);
-  } else {
-    addScore(score1Cr);
-  }
+  const current = document.getElementById(`current--${activePlayer}`);
+  addScore(current);
 });
 
 //event listener for hold button
