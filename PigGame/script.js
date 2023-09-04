@@ -200,6 +200,4 @@ holdButton.addEventListener(`click`, function () {
 });
 
 //event listener for reset button
-newButton.addEventListener(`click`, function () {
-  resetGame();
-});
+newButton.addEventListener(`click`, resetGame);
